@@ -134,6 +134,8 @@ textarea{resize:vertical;min-height:88px;line-height:1.6}
 }
 .money input{border-radius:0 var(--r) var(--r) 0}
 .hint{font-size:11px;color:var(--beige);margin-top:-3px}
+.phone-wrap{display:grid;grid-template-columns:98px 1fr;gap:10px}
+.phone-wrap select,.phone-wrap input{width:100%}
 
 /* Toggle */
 .toggle-wrap{
@@ -203,6 +205,7 @@ textarea{resize:vertical;min-height:88px;line-height:1.6}
 @media(max-width:600px){
   .header{padding:22px 20px}
   .section-body,.promo-ext,.notes{grid-template-columns:1fr}
+  .phone-wrap{grid-template-columns:1fr}
   .header-title{text-align:left}
   .submit{flex-direction:column}
   .crumb{display:none}
@@ -260,15 +263,28 @@ textarea{resize:vertical;min-height:88px;line-height:1.6}
       </div>
       <div class="field">
         <label>Contact Number <span class="req">*</span></label>
-        <input type="tel" id="phone" placeholder="+1 (555) 000-0000" required/>
+        <div class="phone-wrap">
+          <select id="phoneCountry" required>
+            <option value="">Country code...</option>
+            <option value="+1" selected>+1 (US/CA)</option>
+            <option value="+972">+972 (Israel)</option>
+          </select>
+          <input type="tel" id="phone" placeholder="9097825405" inputmode="numeric" pattern="[0-9]{10}" minlength="10" maxlength="10" required/>
+        </div>
+        <p class="hint">Enter exactly 10 digits (example: 9097825405)</p>
       </div>
       <div class="field">
-        <label>Time Zone / Location</label>
-        <input type="text" id="timezone" placeholder="e.g. EST — Miami, FL"/>
+        <label>Time Zone / Location <span class="req">*</span></label>
+        <select id="timezone" required>
+          <option value="">Select time zone...</option>
+          <option value="PST (UTC-8)">PST (UTC-8) - Pacific Time</option>
+          <option value="CST (UTC-6)">CST (UTC-6) - Central Time</option>
+          <option value="EST (UTC-5)">EST (UTC-5) - Eastern Time</option>
+        </select>
       </div>
       <div class="field">
-        <label>Preferred Onboarding Hours</label>
-        <input type="text" id="onboardHours" placeholder="e.g. Mon–Fri, 9am–5pm"/>
+        <label>Preferred Onboarding Hours <span class="req">*</span></label>
+        <input type="text" id="onboardHours" placeholder="e.g. Mon-Fri, 9am-5pm" required/>
       </div>
     </div>
   </div>
@@ -297,20 +313,20 @@ textarea{resize:vertical;min-height:88px;line-height:1.6}
         </select>
       </div>
       <div class="field">
-        <label>Phone Line Type</label>
-        <select id="phoneLineType">
+        <label>Phone Line Type <span class="req">*</span></label>
+        <select id="phoneLineType" required>
           <option value="">Select type…</option>
           <option>VoIP</option><option>Landline</option><option>Mobile / Cell</option>
           <option>PBX</option><option>Other</option>
         </select>
       </div>
       <div class="field">
-        <label>Expected Call Volume</label>
-        <input type="text" id="callVolume" placeholder="e.g. ~50 calls / week"/>
+        <label>Expected Call Volume <span class="req">*</span></label>
+        <input type="text" id="callVolume" placeholder="e.g. ~50 calls / week" required/>
       </div>
       <div class="field full">
         <label>Client Expectations from Service <span class="req">*</span></label>
-        <textarea id="expectations" placeholder="Appointment setting, dispatch, basic intake…"></textarea>
+        <textarea id="expectations" placeholder="Appointment setting, dispatch, basic intake..." required></textarea>
       </div>
     </div>
   </div>
@@ -379,8 +395,8 @@ textarea{resize:vertical;min-height:88px;line-height:1.6}
       <textarea id="salesNotes" placeholder="Anything the client care team should know before first contact…"></textarea>
     </div>
     <div class="field">
-      <label>Submitted By</label>
-      <input type="text" id="salesRep" placeholder="Your name"/>
+      <label>Submitted By <span class="req">*</span></label>
+      <input type="text" id="salesRep" placeholder="Your name" required/>
     </div>
   </div>
 
@@ -407,13 +423,38 @@ function togglePromo(cb){
   document.getElementById('promoTxt').textContent=cb.checked?'Yes — promotion applied':'No promotion applied';
 }
 function v(id){const e=document.getElementById(id);return e?e.value.trim():''}
+function isValidTenDigitPhone(phone){return /^[0-9]{10}$/.test(phone)}
 function submitForm(){
-  const req=['fullName','email','phone','bizName','industry','expectations','planType','pricePerCall'];
+  const req=['fullName','email','phoneCountry','phone','timezone','onboardHours','bizName','industry','phoneLineType','callVolume','expectations','planType','pricePerCall','salesRep'];
   let bad=[];
   req.forEach(id=>{const el=document.getElementById(id);if(!v(id)){bad.push(id);el.style.borderColor='#c1666b'}else el.style.borderColor=''});
   if(bad.length){alert('Please fill in all required fields (marked *) before submitting.');document.getElementById(bad[0]).focus();return}
+  if(!isValidTenDigitPhone(v('phone'))){
+    const phoneEl=document.getElementById('phone');
+    phoneEl.style.borderColor='#c1666b';
+    alert('Please enter a valid 10-digit phone number. Example: 9097825405');
+    phoneEl.focus();
+    return;
+  }
   const promo=document.getElementById('promoCheck').checked;
-  const body=`NEW CLIENT INTAKE — SALES HANDOFF\n${'─'.repeat(50)}\n\nA. CLIENT INFORMATION\n  Full Name:               ${v('fullName')}\n  Email:                   ${v('email')}\n  Phone:                   ${v('phone')}\n  Time Zone / Location:    ${v('timezone')||'—'}\n  Preferred Onboard Hours: ${v('onboardHours')||'—'}\n\nB. COMPANY INFORMATION\n  Business Name:           ${v('bizName')}\n  Industry:                ${v('industry')}\n  Phone Line Type:         ${v('phoneLineType')||'—'}\n  Expected Call Volume:    ${v('callVolume')||'—'}\n\n  Service Expectations:\n  ${v('expectations')}\n\nC. BILLING & PRICING\n  Plan Type:               ${v('planType')}\n  Price per Call:          $${parseFloat(v('pricePerCall')||0).toFixed(2)}\n  Additional Unit Price:   ${v('additionalUnitPrice')?'$'+parseFloat(v('additionalUnitPrice')).toFixed(2):'—'}\n  Promotion Applied:       ${promo?'YES':'No'}\n${promo?`  Promo Code/Name:         ${v('promoName')||'—'}\n  Promo Details:           ${v('promoDetails')||'—'}\n`:''}\nADDITIONAL NOTES\n${v('salesNotes')||'None provided.'}\n\n${'─'.repeat(50)}\nSubmitted by: ${v('salesRep')||'Sales Team'}\nDate: ${new Date().toLocaleString('en-US',{dateStyle:'full',timeStyle:'short'})}`;
+  if(promo){
+    if(!v('promoName')||!v('promoDetails')){
+      alert('Please complete Promotion Code/Name and Promotion Details when promotion is applied.');
+      if(!v('promoName')){
+        const promoNameEl=document.getElementById('promoName');
+        promoNameEl.style.borderColor='#c1666b';
+        promoNameEl.focus();
+        return;
+      }
+      const promoDetailsEl=document.getElementById('promoDetails');
+      promoDetailsEl.style.borderColor='#c1666b';
+      promoDetailsEl.focus();
+      return;
+    }
+    document.getElementById('promoName').style.borderColor='';
+    document.getElementById('promoDetails').style.borderColor='';
+  }
+  const body=`NEW CLIENT INTAKE - SALES HANDOFF\n${'-'.repeat(50)}\n\nA. CLIENT INFORMATION\n  Full Name:               ${v('fullName')}\n  Email:                   ${v('email')}\n  Phone:                   ${v('phoneCountry')} ${v('phone')}\n  Time Zone / Location:    ${v('timezone')||'-'}\n  Preferred Onboard Hours: ${v('onboardHours')||'-'}\n\nB. COMPANY INFORMATION\n  Business Name:           ${v('bizName')}\n  Industry:                ${v('industry')}\n  Phone Line Type:         ${v('phoneLineType')||'-'}\n  Expected Call Volume:    ${v('callVolume')||'-'}\n\n  Service Expectations:\n  ${v('expectations')}\n\nC. BILLING & PRICING\n  Plan Type:               ${v('planType')}\n  Price per Call:          $${parseFloat(v('pricePerCall')||0).toFixed(2)}\n  Additional Unit Price:   ${v('additionalUnitPrice')?'$'+parseFloat(v('additionalUnitPrice')).toFixed(2):'-'}\n  Promotion Applied:       ${promo?'YES':'No'}\n${promo?`  Promo Code/Name:         ${v('promoName')||'-'}\n  Promo Details:           ${v('promoDetails')||'-'}\n`:''}\nADDITIONAL NOTES\n${v('salesNotes')||'None provided.'}\n\n${'-'.repeat(50)}\nSubmitted by: ${v('salesRep')||'Sales Team'}\nDate: ${new Date().toLocaleString('en-US',{dateStyle:'full',timeStyle:'short'})}`;
   window.location.href=`mailto:clientcare@group-u.com?subject=${encodeURIComponent(`[Client Intake] ${v('bizName')} — ${v('fullName')}`)}&body=${encodeURIComponent(body)}`;
   document.getElementById('ok').classList.add('on');
 }
