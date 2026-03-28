@@ -92,6 +92,9 @@ body{background:var(--beige3);color:var(--choco);font-family:var(--sans);min-hei
 }
 .sec-info h2{font-family:var(--serif);font-size:16px;color:var(--choco);letter-spacing:-.2px}
 .sec-info p{font-size:12px;color:var(--choco3);margin-top:2px}
+.section-head-company{margin-left:auto;display:flex;align-items:center;gap:8px}
+.section-head-company label{font-size:9px;letter-spacing:1.5px}
+.section-head-company select{width:185px;padding:8px 30px 8px 10px;font-size:13px}
 
 .section-body{padding:22px 26px;display:grid;grid-template-columns:1fr 1fr;gap:18px 28px}
 .full{grid-column:1/-1}
@@ -206,6 +209,9 @@ textarea{resize:vertical;min-height:88px;line-height:1.6}
   .header{padding:22px 20px}
   .section-body,.promo-ext,.notes{grid-template-columns:1fr}
   .phone-wrap{grid-template-columns:1fr}
+  .section-head{flex-wrap:wrap}
+  .section-head-company{margin-left:0;width:100%}
+  .section-head-company select{width:100%}
   .header-title{text-align:left}
   .submit{flex-direction:column}
   .crumb{display:none}
@@ -250,6 +256,14 @@ textarea{resize:vertical;min-height:88px;line-height:1.6}
       <div class="sec-info">
         <h2>Client Information</h2>
         <p>Primary contact details for the new client</p>
+      </div>
+      <div class="section-head-company">
+        <label for="intakeCompany">Intake For <span class="req">*</span></label>
+        <select id="intakeCompany" required>
+          <option value="">Select company...</option>
+          <option>Ucallz</option>
+          <option>Teli Home Service</option>
+        </select>
       </div>
     </div>
     <div class="section-body">
@@ -425,7 +439,7 @@ function togglePromo(cb){
 function v(id){const e=document.getElementById(id);return e?e.value.trim():''}
 function isValidTenDigitPhone(phone){return /^[0-9]{10}$/.test(phone)}
 function submitForm(){
-  const req=['fullName','email','phoneCountry','phone','timezone','onboardHours','bizName','industry','phoneLineType','callVolume','expectations','planType','pricePerCall','salesRep'];
+  const req=['intakeCompany','fullName','email','phoneCountry','phone','timezone','onboardHours','bizName','industry','phoneLineType','callVolume','expectations','planType','pricePerCall','salesRep'];
   let bad=[];
   req.forEach(id=>{const el=document.getElementById(id);if(!v(id)){bad.push(id);el.style.borderColor='#c1666b'}else el.style.borderColor=''});
   if(bad.length){alert('Please fill in all required fields (marked *) before submitting.');document.getElementById(bad[0]).focus();return}
@@ -454,8 +468,8 @@ function submitForm(){
     document.getElementById('promoName').style.borderColor='';
     document.getElementById('promoDetails').style.borderColor='';
   }
-  const body=`NEW CLIENT INTAKE - SALES HANDOFF\n${'-'.repeat(50)}\n\nA. CLIENT INFORMATION\n  Full Name:               ${v('fullName')}\n  Email:                   ${v('email')}\n  Phone:                   ${v('phoneCountry')} ${v('phone')}\n  Time Zone / Location:    ${v('timezone')||'-'}\n  Preferred Onboard Hours: ${v('onboardHours')||'-'}\n\nB. COMPANY INFORMATION\n  Business Name:           ${v('bizName')}\n  Industry:                ${v('industry')}\n  Phone Line Type:         ${v('phoneLineType')||'-'}\n  Expected Call Volume:    ${v('callVolume')||'-'}\n\n  Service Expectations:\n  ${v('expectations')}\n\nC. BILLING & PRICING\n  Plan Type:               ${v('planType')}\n  Price per Call:          $${parseFloat(v('pricePerCall')||0).toFixed(2)}\n  Additional Unit Price:   ${v('additionalUnitPrice')?'$'+parseFloat(v('additionalUnitPrice')).toFixed(2):'-'}\n  Promotion Applied:       ${promo?'YES':'No'}\n${promo?`  Promo Code/Name:         ${v('promoName')||'-'}\n  Promo Details:           ${v('promoDetails')||'-'}\n`:''}\nADDITIONAL NOTES\n${v('salesNotes')||'None provided.'}\n\n${'-'.repeat(50)}\nSubmitted by: ${v('salesRep')||'Sales Team'}\nDate: ${new Date().toLocaleString('en-US',{dateStyle:'full',timeStyle:'short'})}`;
-  window.location.href=`mailto:clientcare@group-u.com?subject=${encodeURIComponent(`[Client Intake] ${v('bizName')} — ${v('fullName')}`)}&body=${encodeURIComponent(body)}`;
+  const body=`NEW CLIENT INTAKE - SALES HANDOFF\n${'-'.repeat(50)}\n\nIntake For:               ${v('intakeCompany')}\n\nA. CLIENT INFORMATION\n  Full Name:               ${v('fullName')}\n  Email:                   ${v('email')}\n  Phone:                   ${v('phoneCountry')} ${v('phone')}\n  Time Zone / Location:    ${v('timezone')||'-'}\n  Preferred Onboard Hours: ${v('onboardHours')||'-'}\n\nB. COMPANY INFORMATION\n  Business Name:           ${v('bizName')}\n  Industry:                ${v('industry')}\n  Phone Line Type:         ${v('phoneLineType')||'-'}\n  Expected Call Volume:    ${v('callVolume')||'-'}\n\n  Service Expectations:\n  ${v('expectations')}\n\nC. BILLING & PRICING\n  Plan Type:               ${v('planType')}\n  Price per Call:          $${parseFloat(v('pricePerCall')||0).toFixed(2)}\n  Additional Unit Price:   ${v('additionalUnitPrice')?'$'+parseFloat(v('additionalUnitPrice')).toFixed(2):'-'}\n  Promotion Applied:       ${promo?'YES':'No'}\n${promo?`  Promo Code/Name:         ${v('promoName')||'-'}\n  Promo Details:           ${v('promoDetails')||'-'}\n`:''}\nADDITIONAL NOTES\n${v('salesNotes')||'None provided.'}\n\n${'-'.repeat(50)}\nSubmitted by: ${v('salesRep')||'Sales Team'}\nDate: ${new Date().toLocaleString('en-US',{dateStyle:'full',timeStyle:'short'})}`;
+  window.location.href=`mailto:clientcare@group-u.com?subject=${encodeURIComponent(`[Client Intake - ${v('intakeCompany')}] ${v('bizName')} — ${v('fullName')}`)}&body=${encodeURIComponent(body)}`;
   document.getElementById('ok').classList.add('on');
 }
 </script>
